@@ -1,5 +1,5 @@
 // 节点继承对象
-interface NodeObject {
+export interface NodeObject {
     name:string;
     type:string;
     entity_name:string;  // 用于dbclick弹窗,设置对应的参数
@@ -7,7 +7,7 @@ interface NodeObject {
     get_html(cell:any):HTMLElement;
 }
 
-enum NodeType {
+export enum NodeType {
     section,
     process
 }
