@@ -11,10 +11,12 @@ import * as X6PluginStencil from '@antv/x6-plugin-stencil';
 import { process_node } from './node/process_node';
 import { section_node } from './node/section_node';
 
-const map = {
+const node_map = {
   processNode: process_node,
   sectionNode: section_node,
 };
+
+export type node_name = keyof typeof node_map;
 
 /*
  * @Title: GraphUI
@@ -71,8 +73,10 @@ export class graphUI {
   ports: any; // 节点上的连接点
 
   // 节点信息
-  custom_nodes: any;
-  node_instances: Object;
+  custom_nodes: Array<NodeInfo>;
+  node_instances: {
+    [key in node_name | string]?: NodeObject;
+  };
   stencil_title: string;
   stencil_groups: Array<StencilGroups>;
 
@@ -275,18 +279,20 @@ export class graphUI {
   }
 
   // 根据node_name查重, 是否注册过
-  check_registed_node(node_name) {
-    if (this.node_instances['node_name']) return true;
+  check_registed_node(node_name: string) {
+    if (this.node_instances[node_name]) return true;
     else false;
   }
 
   // 注册节点-目前为html节点  （动态注入节点）
   register_node() {
     for (let i = 0; i < this.custom_nodes.length; i++) {
+      debugger;
       let name = this.custom_nodes[i].node_name;
       if (this.check_registed_node(name)) continue;
 
-      let node: NodeObject = new map[name]();
+      const node_constructor = node_map[<node_name>name];
+      let node: NodeObject = new node_constructor();
       this.node_instances[name] = node;
       let style: any = node.get_style();
       X6.Shape.HTML.register({

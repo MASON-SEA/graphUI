@@ -1,6 +1,5 @@
 import { NodeObject } from './nodeObject';
-
-// namespace orui {
+import * as X6 from '@antv/x6';
 export class section_node implements NodeObject {
   constructor() {
     this.type = 'custom-section';
@@ -11,7 +10,7 @@ export class section_node implements NodeObject {
   type: string;
   name: string;
   className: string;
-  entity_name: string;
+  entity_name: string = 'section_node';
 
   get_style() {
     return {
@@ -21,7 +20,7 @@ export class section_node implements NodeObject {
     };
   }
 
-  get_html(cell) {
+  get_html(cell: X6.Cell<X6.Cell.Properties>) {
     const { name, className } = cell.getData();
     const div = document.createElement('div');
     div.className = className;
@@ -29,4 +28,3 @@ export class section_node implements NodeObject {
     return div;
   }
 }
-// }
