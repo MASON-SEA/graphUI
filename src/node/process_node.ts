@@ -1,5 +1,5 @@
 import { NodeObject } from './nodeObject';
-
+import * as X6 from '@antv/x6';
 export class process_node implements NodeObject {
   constructor() {
     this.type = 'custom-process';
@@ -10,7 +10,7 @@ export class process_node implements NodeObject {
   type: string;
   name: string;
   className: string;
-  entity_name: string;
+  entity_name: string = 'process_node';
 
   get_style() {
     return {
@@ -20,8 +20,9 @@ export class process_node implements NodeObject {
     };
   }
 
-  get_html(cell) {
+  get_html(cell: X6.Cell<X6.Cell.Properties>) {
     const { name, className } = cell.getData();
+    console.log(cell, cell.getData());
     const div = document.createElement('div');
     div.className = 'process-node';
     div.innerHTML = name; // 该名字可修改

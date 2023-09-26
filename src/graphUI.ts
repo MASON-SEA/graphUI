@@ -11,10 +11,12 @@ import * as X6PluginStencil from '@antv/x6-plugin-stencil';
 import { process_node } from './node/process_node';
 import { section_node } from './node/section_node';
 
-const map = {
+const node_map = {
   processNode: process_node,
   sectionNode: section_node,
 };
+
+export type node_name = keyof typeof node_map;
 
 /*
  * @Title: GraphUI
@@ -35,7 +37,7 @@ interface graphUIOptions {
 }
 
 interface NodeInfo {
-  node_name: string;
+  node_name: node_name;
   group_name: string;
 }
 
@@ -63,35 +65,37 @@ export class graphUI {
   }
 
   container: HTMLElement;
-  graph: any;
+  graph!: X6.Graph;
   stencil: any;
-  stencil_container: HTMLElement;
-  graph_container: HTMLElement;
-  minimap_container: HTMLElement;
+  stencil_container!: HTMLElement;
+  graph_container!: HTMLElement;
+  minimap_container!: HTMLElement;
   ports: any; // 节点上的连接点
 
   // 节点信息
-  custom_nodes: any;
-  node_instances: Object;
+  custom_nodes: Array<NodeInfo>;
+  node_instances: {
+    [key in node_name | string]?: NodeObject;
+  };
   stencil_title: string;
   stencil_groups: Array<StencilGroups>;
 
   // 插件
-  _keyboard: any;
-  _clipboard: any;
-  _selection: any;
-  _history: any;
+  _keyboard!: X6PluginKeyboard.Keyboard;
+  _clipboard!: X6PluginClipboard.Clipboard;
+  _selection!: X6PluginSelection.Selection;
+  _history!: X6PluginHistory.History;
 
   // 设置节点数据and更新画布
   set_data(data) {
-    let cell = this.get_selected_cells();
-    if (cell) {
-      cell.setData(data);
+    let cells = this.get_selected_cells();
+    if (cells) {
+      // cell.setData(data);
     }
   }
 
   // 判断是否有选中的节点
-  get_selected_cells() {
+  get_selected_cells(): X6.Cell[] | null {
     let cells = this._selection.getSelectedCells();
     if (cells.length) {
       return cells;
@@ -99,7 +103,7 @@ export class graphUI {
     return null;
   }
 
-  get_selected_cell() {
+  get_selected_cell(): X6.Cell | null {
     let nodes = this.graph.getCells();
     for (let i = 0; i < nodes.length; ++i) {
       let n = nodes[i];
@@ -192,15 +196,12 @@ export class graphUI {
       return false;
     });
 
-    // 删除
-    this._keyboard.bindKey(['meta+d', 'ctrl+d'], (a => {
-      console.log(a);
-    })
-    );
-
+    // 删除选中cell
+    this._keyboard.bindKey(['Backspace'], this._onKeyboardDelete.bind(this));
 
     this.graph.on('node:click', ({ e, node, view }) => {
       console.log('click');
+      console.log(arguments);
       _this._selection.select(node);
 
       // 判断之前有没有点击的节点
@@ -330,9 +331,14 @@ export class graphUI {
 
   }
 
+  private _onKeyboardDelete() {
+    const cell = this.get_selected_cell();
+    cell?.remove();
+  }
+
   // 根据node_name查重, 是否注册过
-  check_registed_node(node_name) {
-    if (this.node_instances['node_name']) return true;
+  check_registed_node(node_name: string) {
+    if (this.node_instances[node_name]) return true;
     else false;
   }
 
@@ -342,7 +348,8 @@ export class graphUI {
       let name = this.custom_nodes[i].node_name;
       if (this.check_registed_node(name)) continue;
 
-      let node: NodeObject = new map[name]();
+      const node_constructor = node_map[<node_name>name];
+      let node: NodeObject = new node_constructor();
       this.node_instances[name] = node;
       let style: any = node.get_style();
       X6.Shape.HTML.register({
