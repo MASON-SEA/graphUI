@@ -192,6 +192,13 @@ export class graphUI {
       return false;
     });
 
+    // 删除
+    this._keyboard.bindKey(['meta+d', 'ctrl+d'], (a => {
+      console.log(a);
+    })
+    );
+
+
     this.graph.on('node:click', ({ e, node, view }) => {
       console.log('click');
       _this._selection.select(node);
@@ -215,7 +222,7 @@ export class graphUI {
     });
 
     // 弹窗处理
-    this.graph.on('node:dbclick', ({ e, node, view }) => {});
+    this.graph.on('node:dbclick', ({ e, node, view }) => { });
 
     this.graph.on('node:mouseenter', ({ e, node, view }) => {
       const ports = _this.graph_container.querySelectorAll('.x6-port-body');
@@ -272,6 +279,55 @@ export class graphUI {
     this.graph.on('cell:mouseleave', ({ cell }) => {
       cell.removeTools();
     });
+
+    this.graph.on('cell:contextmenu', ({ e, cell }) => {
+      if (cell.isEdge()) {
+        // 创建输入框
+        const input = document.createElement('input');
+        input.style.all = 'unset';
+        input.style.position = 'absolute';
+        input.style.zIndex = '1000';
+        input.style.backgroundColor = '#fff';
+        input.style.width = '60px';
+        input.style.height = '20px';
+        input.style.border = '1px solid #ddd'
+
+        // 设置输入框的初始值
+        let value = cell.getLabelAt(0)?.attrs?.text?.text || '';
+        value = isNaN(parseInt(value)) ? 1 : parseInt(value);
+        input.value = value;
+
+        //清空线上的值
+        cell.prop('labels/0/attrs/text/text', '');
+
+        // 当用户完成编辑时，更新边的标签
+        input.addEventListener('blur', () => {
+          let value: number | string = isNaN(parseInt(input.value)) ? 1 : parseInt(input.value);
+          value = value < 1 ? 1 : value;
+          value = value == 1 ? '' : value + 'x';
+          if (cell.getLabels().length === 0) {
+            cell.addLabel({ attrs: { text: { text: value } } });
+          } else {
+            cell.prop('labels/0/attrs/text/text', value);
+          }
+          document.body.removeChild(input);
+        });
+
+        // 将输入框添加到文档中，并自动获取焦点
+        document.body.appendChild(input);
+        input.focus();
+
+        // 获取点击的位置
+        const clientPosition = this.graph.clientToLocal(e.clientX, e.clientY);
+
+        // 调整输入框的位置为相对于输入框的中心
+        setTimeout(() => {
+          input.style.left = `calc(${e.clientX}px - ${input.offsetWidth / 2}px)`;
+          input.style.top = `calc(${e.clientY}px - ${input.offsetHeight / 2}px)`;
+        }, 0);
+      }
+    });
+
   }
 
   // 根据node_name查重, 是否注册过
@@ -321,7 +377,7 @@ export class graphUI {
     for (let i = 0; i < _groups_arr.length; ++i) {
       let _group_name = _groups_arr[i][0],
         _nodes = _groups_arr[i][1];
-      let rs = [];
+      rs = [];
       for (let j = 0; j < _nodes?.length; j++) {
         let _n = _nodes[j];
         const node = this.node_instances[_n.node_name];
@@ -601,5 +657,12 @@ export class graphUI {
   get_data() {
     return this.graph.toJSON();
   }
+
+
+  load_data(data) {
+    this.graph.fromJSON(data);
+  }
+
+
 }
 // }
