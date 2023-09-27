@@ -15,8 +15,8 @@ let data = {"cells":[{"shape":"edge","attrs":{"line":{"stroke":"#A2B1C3","target
 let graph = new graphUI({
   container,
   node_info: [
-    { node_name: 'processNode', group_name: 'group1' },
-    { node_name: 'sectionNode', group_name: 'group2' },
+    { node_name: 'processNode', group_name: 'group1',imgurl:'./images/create_bom.png','isEdit':true },
+    { node_name: 'sectionNode', group_name: 'group2',isCheck:true },
   ],
   stencil_title: '测试标头',
   stencil_groups: [

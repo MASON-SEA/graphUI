@@ -39,6 +39,9 @@ interface graphUIOptions {
 interface NodeInfo {
   node_name: node_name;
   group_name: string;
+  imgurl?:string;
+  isCheck?:boolean;
+  isEdit?:boolean
 }
 
 interface StencilGroupsLayoutOptions {
@@ -213,13 +216,13 @@ export class graphUI {
         });
       } else {
       }
-      node.setData({
-        className: node.data.defaultClassName + '-active',
-        is_selected: true,
-      });
-      // node.setData({
-      //     is_selected: true
-      // });
+      if(node.data.className != node.data.defaultClassName + '-active' && e.target.type != 'checkbox'){
+        node.setData({
+          className: node.data.defaultClassName + '-active',
+          is_selected: true,
+        });
+      }
+      this.get_checked_cells()
     });
 
     // 弹窗处理
@@ -248,6 +251,7 @@ export class graphUI {
         if (!node.data.is_selected) {
           node.setData({
             className: node.data.defaultClassName,
+            editable:false
           });
         } else {
           node.setData({
@@ -326,6 +330,9 @@ export class graphUI {
           input.style.left = `calc(${e.clientX}px - ${input.offsetWidth / 2}px)`;
           input.style.top = `calc(${e.clientY}px - ${input.offsetHeight / 2}px)`;
         }, 0);
+      }else if(cell.isNode()){
+        cell.setData({editable:true})
+        debugger
       }
     });
 
@@ -349,15 +356,21 @@ export class graphUI {
       if (this.check_registed_node(name)) continue;
 
       const node_constructor = node_map[<node_name>name];
-      let node: NodeObject = new node_constructor();
+      let node: NodeObject = new node_constructor(this.custom_nodes[i]);
       this.node_instances[name] = node;
       let style: any = node.get_style();
       X6.Shape.HTML.register({
         shape: style.shape,
         width: style.width,
         height: style.height,
+        // attrs:{
+        //   label:{
+        //     text:node.name
+        //   }
+        // },
         effect: ['data'],
         html(cell) {
+          // cell.setData(JSON.parse(JSON.stringify(cell.getData())));
           return node.get_html(cell);
         },
         ports: { ...this.ports },
@@ -393,10 +406,19 @@ export class graphUI {
           data: {
             name: node.name,
             className: node.className,
+            imgurl:node.imgurl,
             defaultClassName: node.className,
           },
         });
         rs.push(r);
+        console.log(rs)
+        if(_n.isEidt){
+          r.setAttrs({
+            label:{
+              contenteditable:true
+            }
+          })
+        }
       }
       this.stencil.load(rs, _group_name);
     }
@@ -671,5 +693,25 @@ export class graphUI {
   }
 
 
+
+  get_checked_cells():any[]{
+    const nodes = this.graph.getNodes()
+    let cells = [] as any[]
+    nodes.forEach((node) => {
+      const keys = Object.keys(this.node_instances)
+      for(let j = 0; j < keys.length; j++){
+        let key = keys[j]
+        //@ts-ignore
+        if(this.node_instances[key].name == node.data.name){
+          const checked = this.node_instances[key]?.get_checked(node)
+          if(checked){
+            cells.push(node)
+          }
+        }
+      }
+      
+    })
+    return cells
+  }
 }
 // }

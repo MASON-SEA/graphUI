@@ -1,31 +1,27 @@
-import { NodeObject } from './nodeObject';
-import * as X6 from '@antv/x6';
-export class process_node implements NodeObject {
-  constructor() {
+import { baseNode } from './baseNode';
+import {NodeOptions } from './nodeObject';
+export class process_node extends baseNode {
+  constructor(options:NodeOptions) {
+    super(options)
     this.type = 'custom-process';
     this.name = '工序';
+    this.imgurl = options.imgurl == undefined?'../images/create_bom.png':options.imgurl;
+    this.isCheck = options.isCheck == undefined?false: options.isCheck 
     this.className = 'process-node';
   }
 
   type: string;
   name: string;
   className: string;
+  imgurl:string;
+  isCheck:boolean;
   entity_name: string = 'process_node';
 
   get_style() {
     return {
-      width: 66,
-      height: 36,
+      width: 200,
+      height: 200,
       shape: 'custom-process',
     };
-  }
-
-  get_html(cell: X6.Cell<X6.Cell.Properties>) {
-    const { name, className } = cell.getData();
-    console.log(cell, cell.getData());
-    const div = document.createElement('div');
-    div.className = 'process-node';
-    div.innerHTML = name; // 该名字可修改
-    return div;
   }
 }

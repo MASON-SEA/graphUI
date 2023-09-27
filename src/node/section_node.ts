@@ -1,30 +1,29 @@
-import { NodeObject } from './nodeObject';
-import * as X6 from '@antv/x6';
-export class section_node implements NodeObject {
-  constructor() {
+import { NodeOptions } from './nodeObject';
+import { baseNode } from './baseNode';
+export class section_node extends baseNode {
+  constructor(options:NodeOptions) {
+    super(options)
     this.type = 'custom-section';
     this.name = '工段';
+    this.imgurl = options.imgurl == undefined?'../images/create_bom.png':options.imgurl;
+    this.isCheck = options.isCheck == undefined?false: options.isCheck 
     this.className = 'section-node';
   }
 
   type: string;
   name: string;
   className: string;
+  imgurl:string;
+  isCheck:boolean;
   entity_name: string = 'section_node';
 
   get_style() {
     return {
-      width: 66,
-      height: 36,
+      width: 100,
+      height: 200,
       shape: 'custom-section',
     };
   }
 
-  get_html(cell: X6.Cell<X6.Cell.Properties>) {
-    const { name, className } = cell.getData();
-    const div = document.createElement('div');
-    div.className = className;
-    div.innerHTML = name; // 该名字可修改
-    return div;
-  }
+
 }
