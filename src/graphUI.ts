@@ -80,6 +80,7 @@ export class graphUI {
   node_instances: {
     [key in node_name | string]?: NodeObject;
   };
+  node_labels:any;
   stencil_title: string;
   stencil_groups: Array<StencilGroups>;
 
@@ -217,12 +218,20 @@ export class graphUI {
       } else {
       }
       if(node.data.className != node.data.defaultClassName + '-active' && e.target.type != 'checkbox'){
-        node.setData({
-          className: node.data.defaultClassName + '-active',
-          is_selected: true,
-        });
+        if(e.target.type != 'checkbox' && e.target.tagName.toLowerCase() == 'input'){
+          node?.setData({
+            editable:true,
+            focusing:true,
+            is_selected: true,
+            isEdit:node.getData().isEdit
+          })
+        }else {
+          node.setData({
+            className: node.data.defaultClassName + '-active',
+            is_selected: true,
+          });
+        }
       }
-      this.get_checked_cells()
     });
 
     // 弹窗处理
@@ -332,7 +341,15 @@ export class graphUI {
         }, 0);
       }else if(cell.isNode()){
         cell.setData({editable:true})
-        debugger
+        // // const keys = Object.keys(this.node_instances)
+        // // for(let j = 0; j < keys.length; j++){
+        // //   let key = keys[j]
+        // //   //@ts-ignore
+        // //   if(this.node_instances[key].name == cell.data.name){
+        // //     this.node_instances[key]?.addOnBlurEvent(this.set_node_name)
+        // //   }
+        // // }
+        // debugger
       }
     });
 
@@ -351,6 +368,10 @@ export class graphUI {
 
   // 注册节点-目前为html节点  （动态注入节点）
   register_node() {
+    this.node_labels = {
+      'sectionNode':'工段',
+      'processNode':'工序'
+    }
     for (let i = 0; i < this.custom_nodes.length; i++) {
       let name = this.custom_nodes[i].node_name;
       if (this.check_registed_node(name)) continue;
@@ -359,15 +380,11 @@ export class graphUI {
       let node: NodeObject = new node_constructor(this.custom_nodes[i]);
       this.node_instances[name] = node;
       let style: any = node.get_style();
+      console.log(style)
       X6.Shape.HTML.register({
         shape: style.shape,
         width: style.width,
         height: style.height,
-        // attrs:{
-        //   label:{
-        //     text:node.name
-        //   }
-        // },
         effect: ['data'],
         html(cell) {
           // cell.setData(JSON.parse(JSON.stringify(cell.getData())));
@@ -408,17 +425,18 @@ export class graphUI {
             className: node.className,
             imgurl:node.imgurl,
             defaultClassName: node.className,
+            isEdit:node.isEdit,
           },
         });
         rs.push(r);
         console.log(rs)
-        if(_n.isEidt){
-          r.setAttrs({
-            label:{
-              contenteditable:true
-            }
-          })
-        }
+        // if(_n.isEidt){
+        //   r.setAttrs({
+        //     label:{
+        //       contenteditable:true
+        //     }
+        //   })
+        // }
       }
       this.stencil.load(rs, _group_name);
     }
@@ -713,5 +731,9 @@ export class graphUI {
     })
     return cells
   }
+
+  // set_node_name(value,cell){
+  //   cell.setData({name:value,editable:false})
+  // }
 }
 // }

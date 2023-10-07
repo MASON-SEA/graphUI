@@ -19,8 +19,8 @@ export class process_node extends baseNode {
 
   get_style() {
     return {
-      width: 200,
-      height: 200,
+      width: 120,
+      height: 120,
       shape: 'custom-process',
     };
   }

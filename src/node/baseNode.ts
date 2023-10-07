@@ -8,6 +8,7 @@ export class baseNode implements NodeObject {
     this.isCheck = options.isCheck == undefined?false: options.isCheck 
     this.className = 'section-node';
     this.checked = false
+    this.isEdit = options.isEdit == undefined?false:options.isEdit
   }
 
   type: string;
@@ -19,17 +20,20 @@ export class baseNode implements NodeObject {
   checkbox:any;
   cell:any;
   checked:boolean;
+  isEdit:boolean;
+  edit_input:any;
+  container:any
 
   get_style() {
     return {
-      width: 150,
-      height: 150,
+      width: 100,
+      height: 100,
       shape: 'custom-section',
     };
   }
 
   get_html(cell: X6.Cell<X6.Cell.Properties>) {
-    const { name, className, imgurl, isCheck,checked,editable,isEidt } = cell.getData();
+    const { name, className, imgurl, isCheck,checked,editable,isEdit,focusing } = cell.getData();
     console.log(cell, cell.getData());
     const div = document.createElement('div') as HTMLElementNodePlus;
     div.className = className;
@@ -51,16 +55,29 @@ export class baseNode implements NodeObject {
       img.src =  `/src/images/section_default_icon.png`
       div.appendChild(img)
     }
-    if(isEidt && editable){
+    if(isEdit && editable){
       const input = document.createElement('input')
       input.value = name
+      input.className = 'base_node_editable_input'
+      const _this = this
+      input.onblur = function (e){
+       cell.setData({name:input.value,editable:false,focusing:false})
+      }
+      this.edit_input = input
+      div['edit_input'] = input
       nameContainer.appendChild(input)
     }else {
       nameContainer.innerHTML = name
     }
     div.appendChild(nameContainer)
+    if(focusing && div['edit_input']){
+      setTimeout(function(){
+        div['edit_input'].focus()
+      },0)
+    }
     div['imgurl'] = imgurl; 
     div['isCheck'] = isCheck;
+    this.container = div
     return div;
   }
 

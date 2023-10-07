@@ -23,5 +23,6 @@ export interface NodeOptions {
 
 export interface HTMLElementNodePlus extends HTMLDivElement{
     imgurl:string;
-    isCheck:string
+    isCheck:string;
+    edit_input:any
 }
