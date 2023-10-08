@@ -55,25 +55,9 @@ export class baseNode implements NodeObject {
       img.src =  `/src/images/section_default_icon.png`
       div.appendChild(img)
     }
-    if(isEdit && editable){
-      const input = document.createElement('input')
-      input.value = name
-      input.className = 'base_node_editable_input'
-      const _this = this
-      input.onblur = function (e){
-       cell.setData({name:input.value,editable:false,focusing:false})
-      }
-      this.edit_input = input
-      div['edit_input'] = input
-      nameContainer.appendChild(input)
-    }else {
-      nameContainer.innerHTML = name
-    }
     div.appendChild(nameContainer)
-    if(focusing && div['edit_input']){
-      setTimeout(function(){
-        div['edit_input'].focus()
-      },0)
+    if(!isEdit ||  !editable){
+      nameContainer.innerHTML = name
     }
     div['imgurl'] = imgurl; 
     div['isCheck'] = isCheck;

@@ -63,6 +63,7 @@ export class graphUI {
     this.node_instances = {};
     this.stencil_title = options.stencil_title || 'default';
     this.stencil_groups = options.stencil_groups || [];
+    this.translate_position = {x:0,y:0}
 
     this.init();
   }
@@ -74,6 +75,10 @@ export class graphUI {
   graph_container!: HTMLElement;
   minimap_container!: HTMLElement;
   ports: any; // 节点上的连接点
+  translate_position:{
+    x:number,
+    y:number
+  }
 
   // 节点信息
   custom_nodes: Array<NodeInfo>;
@@ -218,19 +223,10 @@ export class graphUI {
       } else {
       }
       if(node.data.className != node.data.defaultClassName + '-active' && e.target.type != 'checkbox'){
-        if(e.target.type != 'checkbox' && e.target.tagName.toLowerCase() == 'input'){
-          node?.setData({
-            editable:true,
-            focusing:true,
-            is_selected: true,
-            isEdit:node.getData().isEdit
-          })
-        }else {
-          node.setData({
-            className: node.data.defaultClassName + '-active',
-            is_selected: true,
-          });
-        }
+        node.setData({
+          className: node.data.defaultClassName + '-active',
+          is_selected: true,
+        });
       }
     });
 
@@ -341,6 +337,36 @@ export class graphUI {
         }, 0);
       }else if(cell.isNode()){
         cell.setData({editable:true})
+        if(cell.data.isEdit){
+          const input = document.createElement('input');
+          input.style.all = 'unset';
+          input.style.position = 'absolute';
+          input.style.zIndex = '1000';
+          input.style.backgroundColor = '#fff';
+          input.style.width = '60px';
+          input.style.height = '20px';
+          input.style.border = '1px solid #ddd'
+          input.autofocus = true
+          input.value = cell.data.name
+          // const target = e.target.parentElement.className.indexOf('-node') != -1 ?e.target.parentElement:e.target
+          document.body.appendChild(input)
+          
+          input.onblur = function(e){
+            let value = input.value
+            cell.setData({name:value,editable:false})
+            document.body.removeChild(input)
+          }
+          input.focus()
+          const cell_position = cell.position()
+          let _width = this.stencil.container.clientWidth + parseFloat(input.style.width) / 2 + this.translate_position.x
+          
+          let _height = cell.size().height - parseFloat(input.style.height) + this.translate_position.y
+          setTimeout(() => {
+            
+            input.style.left = `calc(${cell_position.x}px + ${_width}px)`;
+            input.style.top = `calc(${cell_position.y}px + ${_height}px)`;
+          }, 0);
+        }
         // // const keys = Object.keys(this.node_instances)
         // // for(let j = 0; j < keys.length; j++){
         // //   let key = keys[j]
@@ -352,6 +378,11 @@ export class graphUI {
         // debugger
       }
     });
+
+    this.graph.on('translate',({ tx, ty}) => {
+      // console.log(tx,ty)
+      Object.assign(this.translate_position,{x:tx,y:ty})
+    })
 
   }
 
